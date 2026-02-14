@@ -65,13 +65,6 @@ function PublicDirectory() {
                 })}
               </p>
             </div>
-
-            <button
-              onClick={() => navigate("/admin")}
-              className="bg-black text-white px-5 py-2 rounded hover:bg-gray-800 transition"
-            >
-              Admin Login
-            </button>
           </div>
 
           {/* Search (STATIC) */}
