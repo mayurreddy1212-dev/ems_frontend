@@ -7,11 +7,12 @@ function Dashboard() {
   const navigate = useNavigate();
 
   const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
 
-  // Date Time State 
   const [dateTime, setDateTime] = useState(new Date());
 
   const [formData, setFormData] = useState({
@@ -20,18 +21,19 @@ function Dashboard() {
     salary: "",
     phone_no: "",
     address: "",
+    email: "",
     is_active: true,
   });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/");
     } else {
       fetchEmployees();
     }
 
-    // Live clock
     const timer = setInterval(() => {
       setDateTime(new Date());
     }, 1000);
@@ -41,10 +43,13 @@ function Dashboard() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await API.get("/employees");
+      setLoading(true);
+      const response = await API.get("/employee/");
       setEmployees(response.data);
     } catch (error) {
       alert("Failed to fetch employees");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +60,7 @@ function Dashboard() {
       salary: "",
       phone_no: "",
       address: "",
+      email: "",
       is_active: true,
     });
     setIsEditing(false);
@@ -74,6 +80,8 @@ function Dashboard() {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
       const payload = {
         ...formData,
         salary: Number(formData.salary),
@@ -81,15 +89,21 @@ function Dashboard() {
 
       if (isEditing) {
         await API.put(`/employee/${selectedId}`, payload);
+        alert("Employee updated successfully");
       } else {
-        await API.post("/employee", payload);
+        await API.post("/employee/", payload);
+        alert("Employee created successfully");
       }
 
       setShowForm(false);
       resetForm();
       fetchEmployees();
     } catch (error) {
-      alert("Operation failed");
+      alert(
+        error.response?.data?.detail || "Operation failed. Check inputs."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -100,6 +114,7 @@ function Dashboard() {
       salary: emp.salary,
       phone_no: emp.phone_no,
       address: emp.address,
+      email: emp.email,
       is_active: emp.is_active,
     });
 
@@ -113,10 +128,13 @@ function Dashboard() {
       return;
 
     try {
+      setLoading(true);
       await API.delete(`/employee/${id}`);
       fetchEmployees();
     } catch (error) {
       alert("Delete failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -125,13 +143,13 @@ function Dashboard() {
       <Navbar />
 
       <div className="min-h-screen bg-gray-100 p-8">
-        {/* DASHBOARD GREETING + DATE */}
+        {/* Greeting */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-black">
             Hello
           </h1>
           <p className="text-gray-600">
-            Welcome back
+            Welcome back to MR Developers Dashboard
           </p>
 
           <div className="mt-2 text-sm text-gray-500">
@@ -150,7 +168,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* HEADER */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">
             Employee Dashboard
@@ -167,7 +185,7 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* TABLE */}
+        {/* Table */}
         <div className="bg-white shadow-md rounded-xl overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-gray-200">
@@ -177,66 +195,71 @@ function Dashboard() {
                 <th className="p-3">Designation</th>
                 <th className="p-3">Salary</th>
                 <th className="p-3">Phone</th>
+                <th className="p-3">Email</th>
                 <th className="p-3">Active</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {employees.map((emp) => (
-                <tr
-                  key={emp.id}
-                  className="border-t hover:bg-gray-50 transition"
-                >
-                  <td className="p-3">{emp.id}</td>
-                  <td className="p-3">{emp.name}</td>
-                  <td className="p-3">{emp.designation}</td>
-                  <td className="p-3">₹{emp.salary}</td>
-                  <td className="p-3">{emp.phone_no}</td>
-                  <td className="p-3">
-                    {emp.is_active ? (
-                      <span className="text-green-600 font-semibold">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-red-600 font-semibold">
-                        No
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3 flex gap-2">
-                    <button
-                      onClick={() => handleEdit(emp)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(emp.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                    >
-                      Delete
-                    </button>
+              {loading ? (
+                <tr>
+                  <td colSpan="8" className="p-5 text-center">
+                    Loading...
                   </td>
                 </tr>
-              ))}
-
-              {employees.length === 0 && (
+              ) : employees.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan="7"
-                    className="p-5 text-center text-gray-500"
-                  >
+                  <td colSpan="8" className="p-5 text-center text-gray-500">
                     No employees found
                   </td>
                 </tr>
+              ) : (
+                employees.map((emp) => (
+                  <tr
+                    key={emp.id}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
+                    <td className="p-3">{emp.id}</td>
+                    <td className="p-3">{emp.name}</td>
+                    <td className="p-3">{emp.designation}</td>
+                    <td className="p-3">₹{emp.salary}</td>
+                    <td className="p-3">{emp.phone_no}</td>
+                    <td className="p-3">{emp.email}</td>
+                    <td className="p-3">
+                      {emp.is_active ? (
+                        <span className="text-green-600 font-semibold">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-red-600 font-semibold">
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 flex gap-2">
+                      <button
+                        onClick={() => handleEdit(emp)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(emp.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
 
-        {/* MODAL FORM */}
+        {/* Modal Form */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
             <form
@@ -297,6 +320,16 @@ function Dashboard() {
                 required
               />
 
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -321,7 +354,8 @@ function Dashboard() {
 
                 <button
                   type="submit"
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                  disabled={loading}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
                 >
                   {isEditing ? "Update" : "Create"}
                 </button>
