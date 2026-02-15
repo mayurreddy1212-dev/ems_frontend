@@ -22,7 +22,7 @@ function PublicDirectory() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await API.get("/employees");
+      const res = await API.get("/employee/");
       setEmployees(res.data);
     } catch (error) {
       console.log("Fetch failed");

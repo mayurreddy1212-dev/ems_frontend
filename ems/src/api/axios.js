@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://mail-agent-2fbo.onrender.com",
+  baseURL: "https://mail-agent-2fbo.onrender.com", //deployment
+  // baseURL:"http://127.0.0.1:8000", //development
+  timeout:10000,
 });
 
 // attach token automatically

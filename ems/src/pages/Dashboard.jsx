@@ -149,7 +149,7 @@ function Dashboard() {
             Hello
           </h1>
           <p className="text-gray-600">
-            Welcome back to MR Developers Dashboard
+            Welcome back
           </p>
 
           <div className="mt-2 text-sm text-gray-500">
