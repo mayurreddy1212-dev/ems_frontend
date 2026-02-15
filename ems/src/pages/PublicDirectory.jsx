@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function PublicDirectory() {
   const [employees, setEmployees] = useState([]);
@@ -144,6 +145,7 @@ function PublicDirectory() {
           }
         `}
       </style>
+      <Footer/>
     </div>
   );
 }
